@@ -1,9 +1,5 @@
 package model;
 
-/**
- * A customer who is a person.
- * Stores personal identification and optional employment details.
- */
 public class IndividualCustomer extends Customer {
 
     private final String firstName;
@@ -13,7 +9,6 @@ public class IndividualCustomer extends Customer {
     private String employerName;
     private String employerAddress;
 
-    /** Creates an individual customer who is not employed. */
     public IndividualCustomer(String customerId, String firstName, String surname,
                               String identification, String address, String contactDetails) {
         super(customerId, address, contactDetails);
@@ -23,7 +18,6 @@ public class IndividualCustomer extends Customer {
         this.employed = false;
     }
 
-    /** Creates an individual customer who is employed. */
     public IndividualCustomer(String customerId, String firstName, String surname,
                               String identification, String address, String contactDetails,
                               String employerName, String employerAddress) {
@@ -55,18 +49,10 @@ public class IndividualCustomer extends Customer {
         return employerAddress;
     }
 
-    /** Records where the customer works. Both the name and address are required. */
     public void setEmployment(String employerName, String employerAddress) {
         this.employerName = requireText(employerName, "Employer name");
         this.employerAddress = requireText(employerAddress, "Employer address");
         this.employed = true;
-    }
-
-    /** Records that the customer is no longer employed. */
-    public void clearEmployment() {
-        this.employerName = null;
-        this.employerAddress = null;
-        this.employed = false;
     }
 
     @Override

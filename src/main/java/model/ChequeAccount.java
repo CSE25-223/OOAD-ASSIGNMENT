@@ -1,26 +1,31 @@
 package model;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 
-/**
- * A cheque account: used for salaries, allows deposits and withdrawals of any
- * amount (never below zero), and earns no interest. It can only be opened for an
- * employed individual customer.
- */
 public class ChequeAccount extends Account {
 
-    /** Opens a cheque account with no opening deposit. */
     public ChequeAccount(String accountNumber, IndividualCustomer owner, String branch) {
         super(accountNumber, requireEmployed(owner), branch, BigDecimal.ZERO);
     }
 
-    /** Opens a cheque account with an opening deposit. */
     public ChequeAccount(String accountNumber, IndividualCustomer owner, String branch,
                          BigDecimal openingDeposit) {
         super(accountNumber, requireEmployed(owner), branch, openingDeposit);
     }
 
-    /** Runs before the account is created, so an invalid account never exists. */
+    private ChequeAccount(String accountNumber, Customer owner, String branch, LocalDate dateOpened,
+                          BigDecimal balance, List<Transaction> history) {
+        super(accountNumber, owner, branch, dateOpened, balance, history);
+    }
+
+    public static ChequeAccount restore(String accountNumber, Customer owner, String branch,
+                                        LocalDate dateOpened, BigDecimal balance,
+                                        List<Transaction> history) {
+        return new ChequeAccount(accountNumber, owner, branch, dateOpened, balance, history);
+    }
+
     private static IndividualCustomer requireEmployed(IndividualCustomer owner) {
         if (owner == null) {
             throw new IllegalArgumentException("A cheque account must belong to a customer.");

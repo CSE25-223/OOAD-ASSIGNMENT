@@ -3,11 +3,6 @@ package model;
 import java.math.BigDecimal;
 import java.time.YearMonth;
 
-/**
- * One interest payment for one account and one month.
- * It moves through the stages Pending, Validating, Calculating and Posting,
- * and ends as Completed, Skipped or Failed.
- */
 public class PayInterest {
 
     private final String paymentId;
@@ -15,6 +10,7 @@ public class PayInterest {
     private final YearMonth period;
     private PaymentStatus status = PaymentStatus.PENDING;
     private BigDecimal calculatedAmount;
+    private Transaction interestTransaction;
     private String statusReason;
 
     public PayInterest(String paymentId, Account account, YearMonth period) {
@@ -49,12 +45,14 @@ public class PayInterest {
         return calculatedAmount;
     }
 
-    /** Explains why a payment was skipped or failed. Null if it completed normally. */
+    public Transaction getInterestTransaction() {
+        return interestTransaction;
+    }
+
     public String getStatusReason() {
         return statusReason;
     }
 
-    /** Runs the payment from Pending to its final state. A payment can only be processed once. */
     public PaymentStatus process() {
         if (status != PaymentStatus.PENDING) {
             throw new IllegalStateException(
@@ -63,7 +61,6 @@ public class PayInterest {
         return run();
     }
 
-    /** Runs a failed payment again. Validation checks the history first, so interest is never paid twice. */
     public PaymentStatus retry() {
         if (status != PaymentStatus.FAILED) {
             throw new IllegalStateException("Only a failed payment can be retried.");
@@ -92,7 +89,6 @@ public class PayInterest {
         return status;
     }
 
-    /** An account is eligible if it earns interest and has not already been credited for this month. */
     public boolean validateEligibility() {
         if (!(account instanceof InterestBearing)) {
             statusReason = account.getAccountType() + " accounts do not earn interest.";
@@ -107,17 +103,15 @@ public class PayInterest {
         return true;
     }
 
-    /** Asks the account for its monthly interest, using that account type's own rate. */
     public BigDecimal calculate() {
         calculatedAmount = ((InterestBearing) account).calculateMonthlyInterest();
         return calculatedAmount;
     }
 
-    /** Adds the interest to the balance and records it in the history together. */
     public void postAtomically() {
         if (calculatedAmount == null) {
             throw new IllegalStateException("Interest must be calculated before it is posted.");
         }
-        account.creditInterest(calculatedAmount, period);
+        interestTransaction = account.creditInterest(calculatedAmount, period);
     }
 }
